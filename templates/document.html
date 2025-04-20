@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Analysis - Legal Document AI Assistant</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/styles.css') }}">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-cloud/1.2.5/d3.layout.cloud.min.js"></script>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">Legal Document AI Assistant</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/"><i class="bi bi-house"></i> Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard"><i class="bi bi-grid"></i> Dashboard</a>
+                    </li>
+                    <li class="nav-item dropdown" id="user-dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="user-menu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle"></i> <span id="username-display">User</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="user-menu">
+                            <li><a class="dropdown-item" href="#" id="logout-button"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 id="document-title">Document Analysis</h1>
+            <div>
+                <a href="/dashboard" class="btn btn-outline-primary me-2"><i class="bi bi-arrow-left"></i> Back to Dashboard</a>
+                <button id="delete-document-btn" class="btn btn-danger"><i class="bi bi-trash"></i> Delete Document</button>
+            </div>
+        </div>
+
+        <!-- Document Processing Status -->
+        <div id="processing-status" class="alert alert-info mb-4">
+            <div class="d-flex align-items-center">
+                <div class="spinner-border text-primary me-3" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <div>
+                    <h5 class="alert-heading mb-1">Processing Document</h5>
+                    <p class="mb-0" id="status-message">Your document is being processed. This may take a few minutes depending on the document size.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Document Analysis Content -->
+        <div id="document-content" style="display: none;">
+            <!-- Tabs -->
+            <ul class="nav nav-tabs mb-4" id="documentTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="summary-tab" data-bs-toggle="tab" data-bs-target="#summary" type="button" role="tab" aria-controls="summary" aria-selected="true">Summary</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="entities-tab" data-bs-toggle="tab" data-bs-target="#entities" type="button" role="tab" aria-controls="entities" aria-selected="false">Entities</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="qa-tab" data-bs-toggle="tab" data-bs-target="#qa" type="button" role="tab" aria-controls="qa" aria-selected="false">Q&A</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab" aria-controls="history" aria-selected="false">Question History</button>
+                </li>
+            </ul>
+
+            <!-- Tab Content -->
+            <div class="tab-content" id="documentTabsContent">
+                <!-- Summary Tab -->
+                <div class="tab-pane fade show active" id="summary" role="tabpanel" aria-labelledby="summary-tab">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title mb-0">Document Summary</h3>
+                        </div>
+                        <div class="card-body">
+                            <div id="summary-content">
+                                <!-- Summary content will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Entities Tab -->
+                <div class="tab-pane fade" id="entities" role="tabpanel" aria-labelledby="entities-tab">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title mb-0">Extracted Entities</h3>
+                        </div>
+                        <div class="card-body">
+                            <!-- Word Cloud Visualization -->
+                            <div class="word-cloud-container mb-4">
+                                <h4>Entity Word Cloud</h4>
+                                <canvas id="entityWordCloud" width="600" height="400"></canvas>
+                            </div>
+
+                            <!-- Entity Categories -->
+                            <div class="entity-categories">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div id="entityList1"></div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div id="entityList2"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="entities-content" class="row">
+                                <!-- Entities will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q&A Tab -->
+                <div class="tab-pane fade" id="qa" role="tabpanel" aria-labelledby="qa-tab">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title mb-0">Ask Questions</h3>
+                        </div>
+                        <div class="card-body">
+                            <form id="question-form">
+                                <div class="mb-3">
+                                    <label for="question-input" class="form-label">Ask a question about this document:</label>
+                                    <textarea class="form-control" id="question-input" rows="3" placeholder="E.g., What are the key obligations of the tenant in this lease?"></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <span id="ask-button-text">Ask Question</span>
+                                    <div id="ask-spinner" class="spinner-border spinner-border-sm text-light ms-2" role="status" style="display: none;">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </button>
+                            </form>
+
+                            <div id="answer-container" class="mt-4" style="display: none;">
+                                <h4>Answer:</h4>
+                                <div class="answer-card" id="answer-content">
+                                    <!-- Answer will be displayed here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Question History Tab -->
+                <div class="tab-pane fade" id="history" role="tabpanel" aria-labelledby="history-tab">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title mb-0">Question History</h3>
+                        </div>
+                        <div class="card-body">
+                            <div id="questions-history">
+                                <!-- Question history will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete this document? This action cannot be undone.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirm-delete-btn">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Q&A Completion Modal -->
+    <div class="modal fade" id="qaCompletionModal" tabindex="-1" aria-labelledby="qaCompletionModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="qaCompletionModalLabel">Q&A Complete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="qaCompletionModalBody">
+                    <!-- Answer will be displayed here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <footer>
+        <div class="container">
+            <p>💼 <strong>Legal Document AI Assistant</strong> | Powered by OpenAI, FAISS, and spaCy</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check authentication
+            const token = localStorage.getItem('access_token');
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+            if (!token || !user.username) {
+                window.location.href = '/login';
+                return;
+            }
+
+            // Update username display
+            document.getElementById('username-display').textContent = user.username;
+
+            // Handle logout
+            document.getElementById('logout-button').addEventListener('click', function(event) {
+                event.preventDefault();
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('user');
+                window.location.href = '/';
+            });
+
+            // Get document ID from URL
+            const pathParts = window.location.pathname.split('/');
+            const documentId = pathParts[pathParts.length - 1];
+
+            // Fetch document status
+            fetchDocumentStatus(documentId);
+
+            // Delete document button
+            const deleteBtn = document.getElementById('delete-document-btn');
+            const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+
+            deleteBtn.addEventListener('click', function() {
+                deleteModal.show();
+            });
+
+            // Confirm delete
+            document.getElementById('confirm-delete-btn').addEventListener('click', async function() {
+                try {
+                    const response = await fetch(`/api/document/${documentId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        deleteModal.hide();
+                        window.location.href = '/dashboard';
+                    } else {
+                        alert('Error deleting document');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Error deleting document');
+                }
+            });
+
+            // Question form submission
+            document.getElementById('question-form').addEventListener('submit', async function(event) {
+                event.preventDefault();
+
+                const questionInput = document.getElementById('question-input');
+                const question = questionInput.value.trim();
+
+                if (!question) {
+                    alert('Please enter a question');
+                    return;
+                }
+
+                // Show spinner
+                document.getElementById('ask-button-text').textContent = 'Processing...';
+                document.getElementById('ask-spinner').style.display = 'inline-block';
+
+                try {
+                    // Create form data
+                    const formData = new FormData();
+                    formData.append('document_id', documentId);
+                    formData.append('question', question);
+
+                    // Send request
+                    const response = await fetch('/api/ask/', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: formData
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Error getting answer');
+                    }
+
+                    const data = await response.json();
+
+                    // Display answer and show modal
+                    showQACompletionModal(data.answer);
+                    document.getElementById('answer-content').innerHTML = formatAnswer(data.answer);
+                    document.getElementById('answer-container').style.display = 'block';
+
+
+                    // Load updated question history
+                    fetchQuestionHistory(documentId);
+
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Error processing question: ' + error.message);
+                } finally {
+                    // Hide spinner
+                    document.getElementById('ask-button-text').textContent = 'Ask Question';
+                    document.getElementById('ask-spinner').style.display = 'none';
+                }
+            });
+        });
+
+        async function fetchDocumentStatus(documentId) {
+            try {
+                const token = localStorage.getItem('access_token');
+
+                const response = await fetch(`/api/document/${documentId}/status`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error fetching document status');
+                }
+
+                const data = await response.json();
+                const status = data.status;
+
+                // Update status message
+                document.getElementById('status-message').textContent = `Current status: ${formatStatus(status)}`;
+
+                // If document is complete, load content
+                if (status === 'complete') {
+                    document.getElementById('processing-status').style.display = 'none';
+                    document.getElementById('document-content').style.display = 'block';
+
+                    // Load document data
+                    fetchDocumentAnalysis(documentId);
+                    fetchQuestionHistory(documentId);
+                } else if (status === 'error') {
+                    // Show error
+                    document.getElementById('processing-status').classList.remove('alert-info');
+                    document.getElementById('processing-status').classList.add('alert-danger');
+                    document.getElementById('status-message').textContent = 'Error processing document. Please try again.';
+                } else {
+                    // Continue polling
+                    setTimeout(() => fetchDocumentStatus(documentId), 2000);
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('processing-status').classList.remove('alert-info');
+                document.getElementById('processing-status').classList.add('alert-danger');
+                document.getElementById('status-message').textContent = 'Error checking document status: ' + error.message;
+            }
+        }
+
+        async function fetchDocumentAnalysis(documentId) {
+            try {
+                const token = localStorage.getItem('access_token');
+
+                const response = await fetch(`/api/document/${documentId}/analysis`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error fetching document analysis');
+                }
+
+                const data = await response.json();
+
+                // Update document title
+                document.getElementById('document-title').textContent = `Document Analysis: ${data.filename}`;
+
+                // Update summary content
+                document.getElementById('summary-content').innerHTML = `<p>${data.summary.replace(/\n/g, '<br>')}</p>`;
+
+                // Update entities content
+                if (data.entities) {
+                    // Create word cloud
+                    createWordCloud(data.entities);
+
+                    const entitiesContainer = document.getElementById('entities-content');
+                    entitiesContainer.innerHTML = '';
+
+                    // Create entity cards for each category
+                    for (const [category, entities] of Object.entries(data.entities)) {
+                        if (entities.length > 0) {
+                            const col = document.createElement('div');
+                            col.className = 'col-md-6 col-lg-4 mb-4';
+
+                            const card = document.createElement('div');
+                            card.className = 'card h-100';
+
+                            const cardHeader = document.createElement('div');
+                            cardHeader.className = 'card-header';
+                            cardHeader.textContent = formatCategory(category);
+
+                            const cardBody = document.createElement('div');
+                            cardBody.className = 'card-body';
+
+                            // Create entity tags
+                            entities.forEach(entity => {
+                                const tag = document.createElement('span');
+                                tag.className = `entity-tag entity-${category.toLowerCase()}`;
+                                tag.textContent = entity;
+                                cardBody.appendChild(tag);
+                                cardBody.appendChild(document.createTextNode(' '));
+                            });
+
+                            card.appendChild(cardHeader);
+                            card.appendChild(cardBody);
+                            col.appendChild(card);
+                            entitiesContainer.appendChild(col);
+                        }
+                    }
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error loading document analysis: ' + error.message);
+            }
+        }
+
+        async function fetchQuestionHistory(documentId) {
+            try {
+                const token = localStorage.getItem('access_token');
+
+                const response = await fetch(`/api/document/${documentId}/questions`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error fetching question history');
+                }
+
+                const data = await response.json();
+
+                // Update question history
+                const historyContainer = document.getElementById('questions-history');
+                historyContainer.innerHTML = '';
+
+                if (data.questions.length === 0) {
+                    historyContainer.innerHTML = '<p class="text-muted">No questions have been asked yet.</p>';
+                    return;
+                }
+
+                // Sort questions by created date (most recent first)
+                data.questions.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+                // Display questions and answers
+                data.questions.forEach(item => {
+                    const questionCard = document.createElement('div');
+                    questionCard.className = 'question-card mb-3';
+                    questionCard.innerHTML = `<strong>Q:</strong> ${item.question}`;
+
+                    const answerCard = document.createElement('div');
+                    answerCard.className = 'answer-card mb-4';
+                    answerCard.innerHTML = `<strong>A:</strong> ${formatAnswer(item.answer)}`;
+
+                    const timeStamp = document.createElement('small');
+                    timeStamp.className = 'text-muted d-block mt-2';
+                    timeStamp.textContent = new Date(item.created_at).toLocaleString();
+                    answerCard.appendChild(timeStamp);
+
+                    historyContainer.appendChild(questionCard);
+                    historyContainer.appendChild(answerCard);
+                });
+
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('questions-history').innerHTML = '<p class="text-danger">Error loading question history</p>';
+            }
+        }
+
+        function formatStatus(status) {
+            return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        }
+
+        function formatCategory(category) {
+            return category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        }
+
+        function formatAnswer(text) {
+            // Convert newlines to <br> tags
+            return text.replace(/\n/g, '<br>');
+        }
+
+        function showQACompletionModal(answer) {
+            const modalBody = document.getElementById('qaCompletionModalBody');
+            modalBody.innerHTML = formatAnswer(answer);
+            const qaCompletionModal = new bootstrap.Modal(document.getElementById('qaCompletionModal'));
+            qaCompletionModal.show();
+        }
+
+        function createWordCloud(entities) {
+            const canvas = document.getElementById('entityWordCloud');
+            const width = canvas.width;
+            const height = canvas.height;
+
+            const words = [];
+            for (const category in entities) {
+                entities[category].forEach(entity => {
+                  words.push({text: entity, size: entities[category].length * 5}); // Adjust size as needed
+                });
+            }
+
+
+            if (words.length === 0) {
+              // Handle empty entities case
+              const ctx = canvas.getContext('2d');
+              ctx.font = '16px sans-serif';
+              ctx.fillText('No entities found.', width / 2, height / 2);
+              return;
+            }
+
+            d3.layout.cloud()
+                .size([width, height])
+                .words(words)
+                .padding(5)
+                .rotate(function() { return ~~(Math.random() * 2) * 90; })
+                .font("Impact")
+                .fontSize(function(d) { return d.size; })
+                .on("end", draw)
+                .start();
+
+            function draw(words) {
+                d3.select(canvas)
+                    .append("g")
+                    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")")
+                    .selectAll("text")
+                    .data(words)
+                    .enter().append("text")
+                    .style("font-size", function(d) { return d.size + "px"; })
+                    .style("font-family", "Impact")
+                    .style("fill", function(d, i) { return d3.schemeCategory10[i % 10]; })
+                    .attr("text-anchor", "middle")
+                    .attr("transform", function(d) {
+                        return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+                    })
+                    .text(function(d) { return d.text; });
+            }
+        }
+    </script>
+</body>
+</html>

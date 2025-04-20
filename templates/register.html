@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Legal Document AI Assistant</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/styles.css') }}">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #343a40;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .register-container {
+            max-width: 500px;
+            width: 100%;
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        .card-header {
+            background-color: #536DFE;
+            color: white;
+            text-align: center;
+            padding: 25px;
+            border-top-left-radius: 10px !important;
+            border-top-right-radius: 10px !important;
+        }
+        .btn-primary {
+            background-color: #536DFE;
+            border-color: #536DFE;
+        }
+        .btn-primary:hover {
+            background-color: #3a4ddc;
+            border-color: #3a4ddc;
+        }
+        .card-body {
+            padding: 30px;
+        }
+        .form-control {
+            padding: 12px;
+        }
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        #error-alert {
+            display: none;
+            margin-top: 20px;
+        }
+        #success-alert {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="m-0">Create Account</h3>
+                <p class="mb-0 mt-2">Legal Document AI Assistant</p>
+            </div>
+            <div class="card-body">
+                <div id="error-alert" class="alert alert-danger" role="alert"></div>
+                <div id="success-alert" class="alert alert-success" role="alert">
+                    Account successfully created! <a href="/login">Login now</a>
+                </div>
+                
+                <form id="register-form">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                        <div class="form-text">Password must be at least 8 characters long.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirm-password" class="form-label">Confirm Password</label>
+                        <input type="password" class="form-control" id="confirm-password" name="confirm-password" required>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">Register</button>
+                    </div>
+                </form>
+                
+                <div class="login-link">
+                    <p>Already have an account? <a href="/login">Login here</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const registerForm = document.getElementById('register-form');
+            const errorAlert = document.getElementById('error-alert');
+            const successAlert = document.getElementById('success-alert');
+            
+            registerForm.addEventListener('submit', async function(event) {
+                event.preventDefault();
+                
+                // Reset alerts
+                errorAlert.style.display = 'none';
+                successAlert.style.display = 'none';
+                
+                const email = document.getElementById('email').value;
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                const confirmPassword = document.getElementById('confirm-password').value;
+                
+                // Validate form
+                if (password.length < 8) {
+                    errorAlert.textContent = 'Password must be at least 8 characters long.';
+                    errorAlert.style.display = 'block';
+                    return;
+                }
+                
+                if (password !== confirmPassword) {
+                    errorAlert.textContent = 'Passwords do not match.';
+                    errorAlert.style.display = 'block';
+                    return;
+                }
+                
+                try {
+                    // Send registration request
+                    const response = await fetch('/api/auth/register', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            email: email,
+                            username: username,
+                            password: password
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (!response.ok) {
+                        throw new Error(data.detail || 'Registration failed');
+                    }
+                    
+                    // Registration successful
+                    successAlert.style.display = 'block';
+                    registerForm.reset();
+                    
+                } catch (error) {
+                    // Show error message
+                    errorAlert.textContent = error.message || 'Registration failed. Please try again.';
+                    errorAlert.style.display = 'block';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
