@@ -1,0 +1,23 @@
+
+@startuml Network Architecture
+nwdiag {
+  network internet {
+    address = "internet"
+    user [address = "user"]
+    replit
+  }
+  
+  network app {
+    address = "internal"
+    replit [address = "web_app"]
+    database [address = "sqlite"]
+    vector_store [address = "faiss"]
+  }
+  
+  network external {
+    address = "api.openai.com"
+    replit [address = "web_app"]
+    openai [address = "api"]
+  }
+}
+@enduml

@@ -1,0 +1,15 @@
+
+@startuml Document States
+[*] --> Uploaded : Upload document
+Uploaded --> Processing : Start processing
+Processing --> Extracting : Extract text
+Extracting --> Chunking : Chunk text
+Chunking --> BuildingIndex : Build index
+BuildingIndex --> ExtractingEntities : Extract entities
+ExtractingEntities --> GeneratingSummary : Generate summary
+GeneratingSummary --> Complete : Complete processing
+Processing --> Error : Error occurs
+Complete --> [*]
+Error --> [*]
+
+@enduml

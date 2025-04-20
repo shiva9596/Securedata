@@ -1,0 +1,25 @@
+
+@startuml Data Flow
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Dynamic.puml
+
+title Legal Document AI Assistant - Data Flow
+
+Person(user, "User")
+System(web_app, "Web Application")
+System(doc_processor, "Document Processor")
+System(qa_engine, "QA Engine")
+System(vector_store, "Vector Store")
+System(database, "Database")
+System(openai, "OpenAI API")
+
+Rel(user, web_app, "1. Upload document")
+Rel(web_app, doc_processor, "2. Process document")
+Rel(doc_processor, vector_store, "3. Store embeddings")
+Rel(user, web_app, "4. Ask question")
+Rel(web_app, qa_engine, "5. Process question")
+Rel(qa_engine, vector_store, "6. Retrieve chunks")
+Rel(qa_engine, openai, "7. Generate answer")
+Rel(web_app, database, "8. Store results")
+Rel(web_app, user, "9. Return answer")
+
+@enduml

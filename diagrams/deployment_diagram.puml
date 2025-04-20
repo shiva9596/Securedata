@@ -1,0 +1,21 @@
+
+@startuml Deployment Diagram
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Deployment.puml
+
+title Legal Document AI Assistant - Deployment
+
+Deployment_Node(replit, "Replit", "Cloud Platform") {
+    Container(web_app, "Web Application", "FastAPI")
+    ContainerDb(sqlite, "SQLite Database", "Local Storage")
+    ContainerDb(vector_store, "FAISS Vector Store", "Local Storage")
+}
+
+Deployment_Node(openai, "OpenAI", "Cloud Service") {
+    Container(openai_api, "OpenAI API", "External Service")
+}
+
+Rel(web_app, sqlite, "Uses")
+Rel(web_app, vector_store, "Uses")
+Rel(web_app, openai_api, "Uses", "HTTPS")
+
+@enduml

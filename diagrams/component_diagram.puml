@@ -1,0 +1,22 @@
+
+@startuml Component Diagram
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Legal Document AI Assistant - Component Diagram
+
+Container_Boundary(web_app, "Web Application") {
+    Component(auth_component, "Authentication", "Handles user authentication")
+    Component(doc_upload, "Document Upload", "Manages document uploads")
+    Component(doc_process, "Document Processing", "Processes documents")
+    Component(qa_component, "QA System", "Handles questions")
+    Component(api_routes, "API Routes", "REST API endpoints")
+    Component(web_ui, "Web UI", "User interface")
+}
+
+Rel(web_ui, api_routes, "Uses")
+Rel(api_routes, auth_component, "Uses")
+Rel(api_routes, doc_upload, "Uses")
+Rel(api_routes, doc_process, "Uses")
+Rel(api_routes, qa_component, "Uses")
+
+@enduml

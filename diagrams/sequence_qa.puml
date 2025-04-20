@@ -1,0 +1,23 @@
+
+@startuml Question Answering Flow
+actor User
+participant "Web UI" as UI
+participant "FastAPI Backend" as API
+participant "QA Engine" as QA
+participant "Vector Store" as VS
+participant "OpenAI API" as OpenAI
+participant "Database" as DB
+
+User -> UI: Ask question
+UI -> API: POST /api/ask
+API -> DB: Check usage limits
+API -> QA: Process question
+activate QA
+QA -> VS: Search similar chunks
+QA -> OpenAI: Generate answer
+QA -> DB: Store Q&A
+deactivate QA
+API --> UI: Return answer
+UI --> User: Display answer
+
+@enduml

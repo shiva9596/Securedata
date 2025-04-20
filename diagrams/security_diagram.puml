@@ -1,0 +1,25 @@
+
+@startuml Security Architecture
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title Legal Document AI Assistant - Security Architecture
+
+Person(user, "User")
+System_Boundary(security, "Security Layer") {
+    Container(auth, "Authentication", "JWT")
+    Container(rbac, "Authorization", "Role-based")
+    Container(validation, "Input Validation")
+    Container(encryption, "Data Encryption")
+}
+
+System(app, "Application")
+ContainerDb(db, "Database")
+
+Rel(user, auth, "1. Authenticate")
+Rel(auth, rbac, "2. Check permissions")
+Rel(user, validation, "3. Submit data")
+Rel(validation, app, "4. Validated data")
+Rel(app, encryption, "5. Encrypt data")
+Rel(encryption, db, "6. Store data")
+
+@enduml

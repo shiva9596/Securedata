@@ -1,0 +1,42 @@
+
+@startuml Class Diagram
+class User {
+  +id: Integer
+  +email: String
+  +username: String
+  +hashed_password: String
+  +is_active: Boolean
+  +is_admin: Boolean
+  +created_at: DateTime
+}
+
+class Document {
+  +id: String
+  +owner_id: Integer
+  +filename: String
+  +file_path: String
+  +status: String
+  +summary: Text
+}
+
+class Question {
+  +id: Integer
+  +document_id: String
+  +user_id: Integer
+  +question_text: Text
+  +answer_text: Text
+}
+
+class UserPayment {
+  +id: Integer
+  +user_id: Integer
+  +is_premium: Boolean
+  +subscription_end: DateTime
+}
+
+User "1" -- "*" Document: owns
+User "1" -- "*" Question: asks
+User "1" -- "1" UserPayment: has
+Document "1" -- "*" Question: contains
+
+@enduml

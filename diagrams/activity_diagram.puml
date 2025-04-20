@@ -1,0 +1,26 @@
+
+@startuml User Activity Flow
+start
+:Login/Register;
+if (Authenticated?) then (yes)
+  :View Dashboard;
+  fork
+    :Upload Document;
+    :Process Document;
+  fork again
+    :View Documents;
+    :Select Document;
+    :View Analysis;
+  fork again
+    :Ask Questions;
+    if (Premium User?) then (yes)
+      :Unlimited Questions;
+    else (no)
+      :Limited Questions;
+    endif
+  end fork
+else (no)
+  :Show Login Error;
+endif
+stop
+@enduml

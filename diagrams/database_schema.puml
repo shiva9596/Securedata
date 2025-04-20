@@ -1,0 +1,80 @@
+
+@startuml Database Schema
+!theme plain
+skinparam linetype ortho
+
+entity "users" {
+  * id : integer <<PK>>
+  --
+  * email : string
+  * username : string
+  * hashed_password : string
+  * is_active : boolean
+  * is_admin : boolean
+  * created_at : datetime
+}
+
+entity "documents" {
+  * id : string <<PK>>
+  --
+  * owner_id : integer <<FK>>
+  * filename : string
+  * original_filename : string
+  * file_path : string
+  * file_size_kb : integer
+  * file_type : string
+  * status : string
+  * summary : text
+  * created_at : datetime
+  * processed_at : datetime
+}
+
+entity "document_entities" {
+  * id : integer <<PK>>
+  --
+  * document_id : string <<FK>>
+  * category : string
+  * text : string
+}
+
+entity "questions" {
+  * id : integer <<PK>>
+  --
+  * document_id : string <<FK>>
+  * user_id : integer <<FK>>
+  * question_text : text
+  * answer_text : text
+  * created_at : datetime
+}
+
+entity "user_payments" {
+  * id : integer <<PK>>
+  --
+  * user_id : integer <<FK>>
+  * is_premium : boolean
+  * subscription_end : datetime
+  * created_at : datetime
+}
+
+entity "user_activities" {
+  * id : integer <<PK>>
+  --
+  * user_id : integer <<FK>>
+  * activity_type : string
+  * description : text
+  * document_id : string <<FK>>
+  * question_id : integer <<FK>>
+  * extra_data : json
+  * created_at : datetime
+}
+
+users ||--o{ documents
+users ||--o{ questions
+users ||--o{ user_activities
+users ||--o| user_payments
+documents ||--o{ document_entities
+documents ||--o{ questions
+documents ||--o{ user_activities
+questions ||--o{ user_activities
+
+@enduml

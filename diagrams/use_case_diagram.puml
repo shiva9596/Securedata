@@ -1,0 +1,28 @@
+
+@startuml Use Cases
+left to right direction
+actor "User" as user
+actor "Admin" as admin
+
+rectangle "Legal Document AI Assistant" {
+  usecase "Register" as UC1
+  usecase "Login" as UC2
+  usecase "Upload Document" as UC3
+  usecase "View Analysis" as UC4
+  usecase "Ask Questions" as UC5
+  usecase "Manage Documents" as UC6
+  usecase "Upgrade Account" as UC7
+  usecase "Manage Users" as UC8
+}
+
+user --> UC1
+user --> UC2
+user --> UC3
+user --> UC4
+user --> UC5
+user --> UC6
+user --> UC7
+admin --> UC8
+admin --> UC2
+
+@enduml

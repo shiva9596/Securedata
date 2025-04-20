@@ -1,0 +1,30 @@
+
+@startuml System Architecture
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title Legal Document AI Assistant - System Architecture
+
+Person(user, "User", "Legal professional using the system")
+
+System_Boundary(system, "Legal Document AI Assistant") {
+    Container(web_app, "Web Application", "FastAPI", "Handles HTTP requests and serves web interface")
+    Container(auth_service, "Authentication Service", "Python", "Manages user authentication and authorization")
+    Container(doc_processor, "Document Processor", "Python", "Processes and analyzes legal documents")
+    Container(qa_engine, "QA Engine", "Python", "Handles question answering using RAG")
+    Container(ner_service, "NER Service", "spaCy", "Extracts named entities")
+    ContainerDb(vector_store, "Vector Store", "FAISS", "Stores document embeddings")
+    ContainerDb(sql_db, "Database", "SQLite", "Stores user and document data")
+}
+
+System_Ext(openai_api, "OpenAI API", "Provides embeddings and LLM capabilities")
+
+Rel(user, web_app, "Uses", "HTTPS")
+Rel(web_app, auth_service, "Uses")
+Rel(web_app, doc_processor, "Uses")
+Rel(doc_processor, ner_service, "Uses")
+Rel(doc_processor, vector_store, "Stores embeddings")
+Rel(qa_engine, vector_store, "Retrieves similar chunks")
+Rel(qa_engine, openai_api, "Gets completions")
+Rel_R(web_app, sql_db, "Reads/Writes")
+
+@enduml

@@ -1,0 +1,23 @@
+
+@startuml Document Upload Flow
+actor User
+participant "Web UI" as UI
+participant "FastAPI Backend" as API
+participant "Document Processor" as Processor
+participant "NER Service" as NER
+participant "Vector Store" as VS
+participant "Database" as DB
+
+User -> UI: Upload document
+UI -> API: POST /api/upload
+API -> DB: Create document record
+API -> Processor: Process document
+activate Processor
+Processor -> NER: Extract entities
+Processor -> VS: Build embeddings
+Processor -> DB: Update status
+deactivate Processor
+API --> UI: Return document ID
+UI --> User: Show success message
+
+@enduml
